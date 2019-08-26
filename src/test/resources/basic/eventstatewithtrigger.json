@@ -1,0 +1,43 @@
+{
+  "id": "1",
+  "metadata" : {
+    "id": "testprocess",
+    "processn": "testprocessname",
+    "processtype": "Public",
+    "isclosed": "false",
+    "executable": "true",
+    "package": "com.test.process",
+    "version": "1.0"
+  },
+  "trigger-defs" : [ {
+    "id": "2",
+    "name" : "testtrigger",
+    "source" : "testsource",
+    "eventID" : "testeventid",
+    "correlation-token" : "testcorrelationtoken"
+  } ],
+  "states" : [ {
+    "id": "3",
+    "events" : [ {
+      "event-expression" : "trigger.equals(\"testtrigger\")",
+      "timeout" : "testTimeout",
+      "action-mode" : "SEQUENTIAL",
+      "actions" : [ {
+        "function" : {
+          "name": "testFunction"
+        },
+        "timeout" : 5,
+        "retry" : {
+          "match" : "testMatch",
+          "retry-interval" : 2,
+          "max-retry" : 10,
+          "next-state" : "testNextRetryState"
+        }
+      } ],
+      "next-state" : "testNextState"
+    } ],
+    "name" : "eventstate",
+    "type" : "EVENT",
+    "start" : true
+  } ]
+}
