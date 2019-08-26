@@ -22,7 +22,9 @@ import java.util.Iterator;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.MessageEventDefinition;
 import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.emf.ecore.util.FeatureMap;
 import org.junit.jupiter.api.Test;
 import org.serverless.workflow.bpmn.impl.BpmnParser;
@@ -84,5 +86,14 @@ public class BpmnParserTest {
                              entry.getValue());
             }
         }
+
+        assertNotNull(process.getFlowElements());
+        assertEquals(1, process.getFlowElements().size());
+        assertTrue(process.getFlowElements().get(0) instanceof StartEvent);
+
+        StartEvent startEvent = (StartEvent) process.getFlowElements().get(0);
+        assertNotNull(startEvent.getEventDefinitions());
+        assertEquals(1, startEvent.getEventDefinitions().size());
+        assertTrue(startEvent.getEventDefinitions().get(0) instanceof MessageEventDefinition);
     }
 }
