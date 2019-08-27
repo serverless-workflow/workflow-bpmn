@@ -25,6 +25,7 @@ import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.MessageEventDefinition;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.StartEvent;
+import org.eclipse.bpmn2.Task;
 import org.eclipse.emf.ecore.util.FeatureMap;
 import org.junit.jupiter.api.Test;
 import org.serverless.workflow.bpmn.impl.BpmnParser;
@@ -53,7 +54,7 @@ public class BpmnParserTest {
     }
 
     @Test
-    public void testWorkflowMetadata() throws Exception {
+    public void testSingleEventStateWithSingleTrigger() throws Exception {
         String workflowString = IOUtils
                 .toString(this.getClass().getResourceAsStream("/basic/eventstatewithtrigger.json"),
                           "UTF-8");
@@ -88,12 +89,29 @@ public class BpmnParserTest {
         }
 
         assertNotNull(process.getFlowElements());
-        assertEquals(1, process.getFlowElements().size());
+        assertEquals(2,
+                     process.getFlowElements().size());
         assertTrue(process.getFlowElements().get(0) instanceof StartEvent);
+        assertTrue(process.getFlowElements().get(1) instanceof Task);
 
         StartEvent startEvent = (StartEvent) process.getFlowElements().get(0);
         assertNotNull(startEvent.getEventDefinitions());
-        assertEquals(1, startEvent.getEventDefinitions().size());
+        assertEquals(1,
+                     startEvent.getEventDefinitions().size());
         assertTrue(startEvent.getEventDefinitions().get(0) instanceof MessageEventDefinition);
+
+        //System.out.println("****" + parser.toBpmn2String());
+    }
+
+    @Test
+    public void testMultipleEventStatesWithMultipleTriggers() throws Exception {
+        String workflowString = IOUtils
+                .toString(this.getClass().getResourceAsStream("/basic/multipleeventstateswithtriggers.json"),
+                          "UTF-8");
+
+        BpmnParser parser = new BpmnParser(workflowString);
+        assertTrue(parser.getWorkflowController().isValid());
+
+        // TODO finish
     }
 }

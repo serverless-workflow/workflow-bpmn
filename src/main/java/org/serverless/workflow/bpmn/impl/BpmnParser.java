@@ -38,6 +38,7 @@ import org.eclipse.bpmn2.di.BpmnDiFactory;
 import org.serverless.workflow.api.Workflow;
 import org.serverless.workflow.api.WorkflowController;
 import org.serverless.workflow.api.events.TriggerEvent;
+import org.serverless.workflow.api.states.EventState;
 import org.serverless.workflow.bpmn.util.ParserUtils;
 import org.serverless.workflow.bpmn.util.WorkflowBpmn2ResourceImpl;
 import org.slf4j.Logger;
@@ -184,6 +185,19 @@ public class BpmnParser {
             logger.error("No trigger events found. Returning default process!");
             return genDefaultDefinitions(resource);
         }
+
+        // next generate workitem for each of the event functions
+        // Note - currently we only support event states.
+        // Next versions will support more serverless workflow states
+        triggerEventList.stream().forEach(trigger -> {
+            List<EventState> eventStatesForTrigger = workflowController.getEventStatesForTriggerEvent(trigger);
+            AtomicInteger triggerEventCounter = new AtomicInteger();
+            ParserUtils.generateWorkitems(workflowController.getAllFunctionsForEventStates(eventStatesForTrigger),
+                                          trigger.getName(),
+                                          definitions,
+                                          process,
+                                          triggerEventCounter.getAndIncrement());
+        });
 
         return definitions;
     }

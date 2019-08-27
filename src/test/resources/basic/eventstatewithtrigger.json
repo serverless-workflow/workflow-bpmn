@@ -24,7 +24,11 @@
       "action-mode" : "SEQUENTIAL",
       "actions" : [ {
         "function" : {
-          "name": "testFunction"
+          "name": "Rest",
+          "metadata" : {
+            "Url": "http://testurl",
+            "Method": "POST"
+          }
         },
         "timeout" : 5,
         "retry" : {

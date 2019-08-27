@@ -15,16 +15,27 @@
     "source" : "testsource",
     "eventID" : "testeventid",
     "correlation-token" : "testcorrelationtoken"
-  } ],
+  },
+    {
+      "id": "3",
+      "name" : "testtrigger2",
+      "source" : "testsource2",
+      "eventID" : "testeventid2",
+      "correlation-token" : "testcorrelationtoken2"
+    }],
   "states" : [ {
-    "id": "3",
+    "id": "4",
     "events" : [ {
       "event-expression" : "trigger.equals(\"testtrigger\")",
       "timeout" : "testTimeout",
       "action-mode" : "SEQUENTIAL",
       "actions" : [ {
         "function" : {
-          "name": "testFunction"
+          "name": "Rest",
+          "metadata" : {
+            "Url": "http://testurl",
+            "Method": "POST"
+          }
         },
         "timeout" : 5,
         "retry" : {
@@ -39,5 +50,33 @@
     "name" : "eventstate",
     "type" : "EVENT",
     "start" : true
-  } ]
+  },
+    {
+      "id": "5",
+      "events" : [ {
+        "event-expression" : "trigger.equals(\"testtrigger2\")",
+        "timeout" : "testTimeout",
+        "action-mode" : "SEQUENTIAL",
+        "actions" : [ {
+          "function" : {
+            "name": "Rest",
+            "metadata" : {
+              "Url": "http://testurl",
+              "Method": "POST"
+            }
+          },
+          "timeout" : 5,
+          "retry" : {
+            "match" : "testMatch",
+            "retry-interval" : 2,
+            "max-retry" : 10,
+            "next-state" : "testNextRetryState"
+          }
+        } ],
+        "next-state" : "testNextState"
+      } ],
+      "name" : "eventstate2",
+      "type" : "EVENT",
+      "start" : true
+    }]
 }
