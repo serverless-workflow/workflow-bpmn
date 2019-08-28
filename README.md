@@ -102,6 +102,14 @@ The json could look like:
 }
 ```
 
+You can use this project to parse it into BPMN2:
+
+```java
+    BpmnParser parser = new BpmnParser(workflowJSON);
+    String bpmn2String =  parser.toBpmn2String();
+    ...
+```
+
 The BPMN process generated would look like this:
 
 
