@@ -115,6 +115,8 @@ public class BpmnParserTest {
         BpmnParser parser = new BpmnParser(workflowString);
         assertTrue(parser.getWorkflowController().isValid());
 
+        //System.out.println("****" + parser.toBpmn2String());
+
         // TODO finish
     }
 }

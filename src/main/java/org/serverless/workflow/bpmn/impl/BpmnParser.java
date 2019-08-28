@@ -189,9 +189,9 @@ public class BpmnParser {
         // next generate workitem for each of the event functions
         // Note - currently we only support event states.
         // Next versions will support more serverless workflow states
+        AtomicInteger triggerEventCounter = new AtomicInteger();
         triggerEventList.stream().forEach(trigger -> {
             List<EventState> eventStatesForTrigger = workflowController.getEventStatesForTriggerEvent(trigger);
-            AtomicInteger triggerEventCounter = new AtomicInteger();
             ParserUtils.generateWorkitems(workflowController.getAllFunctionsForEventStates(eventStatesForTrigger),
                                           trigger.getName(),
                                           definitions,
@@ -199,8 +199,10 @@ public class BpmnParser {
                                           triggerEventCounter.getAndIncrement());
         });
 
-        ParserUtils.generateEndEvents(definitions, process);
-        ParserUtils.connectNodes(definitions, process);
+        ParserUtils.generateEndEvents(definitions,
+                                      process);
+        ParserUtils.connectNodes(definitions,
+                                 process);
 
         return definitions;
     }

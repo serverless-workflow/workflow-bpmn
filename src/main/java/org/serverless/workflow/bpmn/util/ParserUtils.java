@@ -72,7 +72,6 @@ import org.jboss.drools.DroolsFactory;
 import org.jboss.drools.DroolsPackage;
 import org.jboss.drools.MetaDataType;
 import org.jboss.drools.impl.DroolsFactoryImpl;
-import org.serverless.workflow.api.events.Event;
 import org.serverless.workflow.api.events.TriggerEvent;
 import org.serverless.workflow.api.functions.Function;
 import org.slf4j.Logger;
@@ -269,36 +268,40 @@ public class ParserUtils {
         if (workingStartEvent != null) {
             // create rest workitem from function (TODO: currently we just grab first function...will implement multiple next version!)
             Task workitemForFunction = createRestWorkitemForFunction(
-                                functions.get(0),
-                                triggerName,
-                                definitions,
-                                process,
-                                triggerCounter);
+                    functions.get(0),
+                    triggerName,
+                    definitions,
+                    process,
+                    triggerCounter);
             // add task to process
             process.getFlowElements().add(workitemForFunction);
-
         } else {
             logger.error("Unable to find message start event for trigger name: " + triggerName);
         }
     }
 
-    public static void generateEndEvents(Definitions definitions, Process process) {
+    public static void generateEndEvents(Definitions definitions,
+                                         Process process) {
         // generate end events for each of the generated workitems
         List<Task> availableTasks = getTasks(process);
         availableTasks.stream().forEach(task -> {
-            EndEvent endEventForTask = (EndEvent) Bpmn20Stencil.createElement("EndTerminateEvent", null, false);
-            endEventForTask.setId(task.getName().substring(0, task.getName().indexOf("-")) + "endevent");
-            endEventForTask.setName(task.getName().substring(0, task.getName().indexOf("-")) + "End");
+            EndEvent endEventForTask = (EndEvent) Bpmn20Stencil.createElement("EndTerminateEvent",
+                                                                              null,
+                                                                              false);
+            endEventForTask.setId(task.getName().substring(0,
+                                                           task.getName().indexOf("-")) + "endevent");
+            endEventForTask.setName(task.getName().substring(0,
+                                                             task.getName().indexOf("-")) + "End");
             process.getFlowElements().add(endEventForTask);
 
             // end event bounds
             // first find the task bounds
             Plane plane = definitions.getDiagrams().get(0).getPlane();
             BPMNShape endEventBpmnShape = BpmnDiFactory.eINSTANCE.createBPMNShape();
-            for(DiagramElement de : plane.getPlaneElement()) {
-                if(de instanceof BPMNShape) {
+            for (DiagramElement de : plane.getPlaneElement()) {
+                if (de instanceof BPMNShape) {
                     BPMNShape bpmnShape = (BPMNShape) de;
-                    if(bpmnShape.getBpmnElement().getId() != null && bpmnShape.getBpmnElement().getId().equals(task.getId())) {
+                    if (bpmnShape.getBpmnElement().getId() != null && bpmnShape.getBpmnElement().getId().equals(task.getId())) {
                         Bounds taskBounds = bpmnShape.getBounds();
                         // craete the end event bounds now
                         //BPMNShape endEventBpmnShape = BpmnDiFactory.eINSTANCE.createBPMNShape();
@@ -314,15 +317,15 @@ public class ParserUtils {
             }
             plane.getPlaneElement().add(endEventBpmnShape);
         });
-
     }
 
-    private static BPMNShape getBpmnShapeForFlowElement(FlowElement flowElement, Definitions definitions) {
+    private static BPMNShape getBpmnShapeForFlowElement(FlowElement flowElement,
+                                                        Definitions definitions) {
         Plane plane = definitions.getDiagrams().get(0).getPlane();
-        for(DiagramElement de : plane.getPlaneElement()) {
-            if(de instanceof BPMNShape) {
+        for (DiagramElement de : plane.getPlaneElement()) {
+            if (de instanceof BPMNShape) {
                 BPMNShape bpmnShape = (BPMNShape) de;
-                if(bpmnShape.getBpmnElement().getId().equals(flowElement.getId())) {
+                if (bpmnShape.getBpmnElement().getId().equals(flowElement.getId())) {
                     return bpmnShape;
                 }
             }
@@ -330,10 +333,12 @@ public class ParserUtils {
         return null;
     }
 
-    public static void connectNodes(Definitions definitions, Process process) {
+    public static void connectNodes(Definitions definitions,
+                                    Process process) {
         Plane plane = definitions.getDiagrams().get(0).getPlane();
         getStartEvents(process).stream().forEach(startEvent -> {
-            Task workitemForStartEvent = getRestWorkitemForStartEvent(startEvent, process);
+            Task workitemForStartEvent = getRestWorkitemForStartEvent(startEvent,
+                                                                      process);
             // connect start event to task
             SequenceFlow startToWorkitemSequenceFlow = Bpmn2Factory.eINSTANCE.createSequenceFlow();
             startToWorkitemSequenceFlow.setSourceRef(startEvent);
@@ -343,12 +348,14 @@ public class ParserUtils {
 
             BPMNEdge startToWorkitemEdge = BpmnDiFactory.eINSTANCE.createBPMNEdge();
             startToWorkitemEdge.setBpmnElement(startToWorkitemSequenceFlow);
-            startToWorkitemEdge.setSourceElement(getBpmnShapeForFlowElement(startEvent, definitions));
-            startToWorkitemEdge.setTargetElement(getBpmnShapeForFlowElement(workitemForStartEvent, definitions));
+            startToWorkitemEdge.setSourceElement(getBpmnShapeForFlowElement(startEvent,
+                                                                            definitions));
+            startToWorkitemEdge.setTargetElement(getBpmnShapeForFlowElement(workitemForStartEvent,
+                                                                            definitions));
             plane.getPlaneElement().add(startToWorkitemEdge);
 
-
-            EndEvent endEventForStartEvent = getEndEventForStartEvent(startEvent, process);
+            EndEvent endEventForStartEvent = getEndEventForStartEvent(startEvent,
+                                                                      process);
             // connect workitem to end event
             SequenceFlow workitemToEndEventSequenceFlow = Bpmn2Factory.eINSTANCE.createSequenceFlow();
             workitemToEndEventSequenceFlow.setSourceRef(workitemForStartEvent);
@@ -358,17 +365,18 @@ public class ParserUtils {
 
             BPMNEdge workitemToEndEdge = BpmnDiFactory.eINSTANCE.createBPMNEdge();
             workitemToEndEdge.setBpmnElement(workitemToEndEventSequenceFlow);
-            workitemToEndEdge.setSourceElement(getBpmnShapeForFlowElement(workitemForStartEvent, definitions));
-            workitemToEndEdge.setTargetElement(getBpmnShapeForFlowElement(endEventForStartEvent, definitions));
+            workitemToEndEdge.setSourceElement(getBpmnShapeForFlowElement(workitemForStartEvent,
+                                                                          definitions));
+            workitemToEndEdge.setTargetElement(getBpmnShapeForFlowElement(endEventForStartEvent,
+                                                                          definitions));
             plane.getPlaneElement().add(workitemToEndEdge);
         });
     }
 
-
     private static List<StartEvent> getStartEvents(Process process) {
         List<StartEvent> startEvents = new ArrayList<>();
-        for(FlowElement flowElement : process.getFlowElements()) {
-            if(flowElement instanceof  StartEvent) {
+        for (FlowElement flowElement : process.getFlowElements()) {
+            if (flowElement instanceof StartEvent) {
                 startEvents.add((StartEvent) flowElement);
             }
         }
@@ -377,8 +385,8 @@ public class ParserUtils {
 
     private static List<EndEvent> getEndEvents(Process process) {
         List<EndEvent> endEvents = new ArrayList<>();
-        for(FlowElement flowElement : process.getFlowElements()) {
-            if(flowElement instanceof  EndEvent) {
+        for (FlowElement flowElement : process.getFlowElements()) {
+            if (flowElement instanceof EndEvent) {
                 endEvents.add((EndEvent) flowElement);
             }
         }
@@ -387,22 +395,24 @@ public class ParserUtils {
 
     private static List<Task> getTasks(Process process) {
         List<Task> tasks = new ArrayList<>();
-        for(FlowElement flowElement : process.getFlowElements()) {
-            if(flowElement instanceof  Task) {
+        for (FlowElement flowElement : process.getFlowElements()) {
+            if (flowElement instanceof Task) {
                 tasks.add((Task) flowElement);
             }
         }
         return tasks;
     }
 
-    private static Task getRestWorkitemForStartEvent(StartEvent startEvent, Process process) {
+    private static Task getRestWorkitemForStartEvent(StartEvent startEvent,
+                                                     Process process) {
         List<Task> retTasks = getTasks(process).stream()
                 .filter(task -> task.getName().indexOf(startEvent.getName()) >= 0)
                 .collect(Collectors.toList());
         return (retTasks != null && retTasks.size() > 0) ? retTasks.get(0) : null;
     }
 
-    private static EndEvent getEndEventForStartEvent(StartEvent startEvent, Process process) {
+    private static EndEvent getEndEventForStartEvent(StartEvent startEvent,
+                                                     Process process) {
         List<EndEvent> retEndEvents = getEndEvents(process).stream()
                 .filter(endEvent -> endEvent.getName().equals(startEvent.getName() + "End"))
                 .collect(Collectors.toList());
@@ -410,11 +420,11 @@ public class ParserUtils {
     }
 
     public static Task createRestWorkitemForFunction(
-                                           Function function,
-                                           String triggerName,
-                                           Definitions definitions,
-                                           Process process,
-                                           int triggerCounter) {
+            Function function,
+            String triggerName,
+            Definitions definitions,
+            Process process,
+            int triggerCounter) {
         Task task = Bpmn2Factory.eINSTANCE.createTask();
         task.setId(triggerName + "RestWorkitem");
 
@@ -563,8 +573,8 @@ public class ParserUtils {
         Bounds bounds = DcFactory.eINSTANCE.createBounds();
         bounds.setWidth(100);
         bounds.setHeight(80);
-        bounds.setX(100 + 200 + (triggerCounter * 200));
-        bounds.setY(80 + (triggerCounter * 80));
+        bounds.setX(120 + 200);
+        bounds.setY(80 + (triggerCounter * 120));
         bpmnShape.setBounds(bounds);
         plane.getPlaneElement().add(bpmnShape);
 
