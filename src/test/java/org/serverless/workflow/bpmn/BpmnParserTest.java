@@ -22,8 +22,10 @@ import java.util.Iterator;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.EndEvent;
 import org.eclipse.bpmn2.MessageEventDefinition;
 import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.bpmn2.Task;
 import org.eclipse.emf.ecore.util.FeatureMap;
@@ -89,18 +91,19 @@ public class BpmnParserTest {
         }
 
         assertNotNull(process.getFlowElements());
-        assertEquals(2,
+        assertEquals(5,
                      process.getFlowElements().size());
         assertTrue(process.getFlowElements().get(0) instanceof StartEvent);
         assertTrue(process.getFlowElements().get(1) instanceof Task);
+        assertTrue(process.getFlowElements().get(2) instanceof EndEvent);
+        assertTrue(process.getFlowElements().get(3) instanceof SequenceFlow);
+        assertTrue(process.getFlowElements().get(4) instanceof SequenceFlow);
 
         StartEvent startEvent = (StartEvent) process.getFlowElements().get(0);
         assertNotNull(startEvent.getEventDefinitions());
         assertEquals(1,
                      startEvent.getEventDefinitions().size());
         assertTrue(startEvent.getEventDefinitions().get(0) instanceof MessageEventDefinition);
-
-        //System.out.println("****" + parser.toBpmn2String());
     }
 
     @Test

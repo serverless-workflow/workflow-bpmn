@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.bpmn2.Assignment;
 import org.eclipse.bpmn2.Auditing;
@@ -35,6 +36,7 @@ import org.eclipse.bpmn2.DataOutputAssociation;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.DocumentRoot;
 import org.eclipse.bpmn2.Documentation;
+import org.eclipse.bpmn2.EndEvent;
 import org.eclipse.bpmn2.ExtensionAttributeValue;
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.FormalExpression;
@@ -47,9 +49,11 @@ import org.eclipse.bpmn2.OutputSet;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.ProcessType;
 import org.eclipse.bpmn2.Property;
+import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.bpmn2.Task;
 import org.eclipse.bpmn2.di.BPMNDiagram;
+import org.eclipse.bpmn2.di.BPMNEdge;
 import org.eclipse.bpmn2.di.BPMNPlane;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.di.BpmnDiFactory;
@@ -68,6 +72,7 @@ import org.jboss.drools.DroolsFactory;
 import org.jboss.drools.DroolsPackage;
 import org.jboss.drools.MetaDataType;
 import org.jboss.drools.impl.DroolsFactoryImpl;
+import org.serverless.workflow.api.events.Event;
 import org.serverless.workflow.api.events.TriggerEvent;
 import org.serverless.workflow.api.functions.Function;
 import org.slf4j.Logger;
@@ -202,6 +207,7 @@ public class ParserUtils {
         StartEvent startEvent = (StartEvent) Bpmn20Stencil.createElement("StartMessageEvent",
                                                                          null,
                                                                          false);
+        startEvent.setId(triggerEvent.getName() + "startevent");
         startEvent.setName(triggerEvent.getName());
         // add the data mapping for start event
         DataOutput dataOutput = Bpmn2Factory.eINSTANCE.createDataOutput();
@@ -262,34 +268,156 @@ public class ParserUtils {
 
         if (workingStartEvent != null) {
             // create rest workitem from function (TODO: currently we just grab first function...will implement multiple next version!)
-            Task restWorkitem = Bpmn2Factory.eINSTANCE.createTask();
-            restWorkitem.setId(triggerName + "RestWorkitem");
-            process.getFlowElements().add(restWorkitem);
-
-            setRestWorkitemInfo(restWorkitem,
+            Task workitemForFunction = createRestWorkitemForFunction(
                                 functions.get(0),
                                 triggerName,
                                 definitions,
                                 process,
                                 triggerCounter);
-            // add the start even to process
-            // conect start event to workitem
-            //connectNodes(workingStartEvent, workitemForFunction, process);
-            // create end event
-            // connect end event to workitem
-            //connectNodes(workitemForFunction, endEvent, process);
+            // add task to process
+            process.getFlowElements().add(workitemForFunction);
 
         } else {
             logger.error("Unable to find message start event for trigger name: " + triggerName);
         }
     }
 
-    public static void setRestWorkitemInfo(Task task,
+    public static void generateEndEvents(Definitions definitions, Process process) {
+        // generate end events for each of the generated workitems
+        List<Task> availableTasks = getTasks(process);
+        availableTasks.stream().forEach(task -> {
+            EndEvent endEventForTask = (EndEvent) Bpmn20Stencil.createElement("EndTerminateEvent", null, false);
+            endEventForTask.setId(task.getName().substring(0, task.getName().indexOf("-")) + "endevent");
+            endEventForTask.setName(task.getName().substring(0, task.getName().indexOf("-")) + "End");
+            process.getFlowElements().add(endEventForTask);
+
+            // end event bounds
+            // first find the task bounds
+            Plane plane = definitions.getDiagrams().get(0).getPlane();
+            BPMNShape endEventBpmnShape = BpmnDiFactory.eINSTANCE.createBPMNShape();
+            for(DiagramElement de : plane.getPlaneElement()) {
+                if(de instanceof BPMNShape) {
+                    BPMNShape bpmnShape = (BPMNShape) de;
+                    if(bpmnShape.getBpmnElement().getId() != null && bpmnShape.getBpmnElement().getId().equals(task.getId())) {
+                        Bounds taskBounds = bpmnShape.getBounds();
+                        // craete the end event bounds now
+                        //BPMNShape endEventBpmnShape = BpmnDiFactory.eINSTANCE.createBPMNShape();
+                        endEventBpmnShape.setBpmnElement(endEventForTask);
+                        Bounds endEventBounds = DcFactory.eINSTANCE.createBounds();
+                        endEventBounds.setWidth(36);
+                        endEventBounds.setHeight(36);
+                        endEventBounds.setX(taskBounds.getX() + 180);
+                        endEventBounds.setY(taskBounds.getY() + 20);
+                        endEventBpmnShape.setBounds(endEventBounds);
+                    }
+                }
+            }
+            plane.getPlaneElement().add(endEventBpmnShape);
+        });
+
+    }
+
+    private static BPMNShape getBpmnShapeForFlowElement(FlowElement flowElement, Definitions definitions) {
+        Plane plane = definitions.getDiagrams().get(0).getPlane();
+        for(DiagramElement de : plane.getPlaneElement()) {
+            if(de instanceof BPMNShape) {
+                BPMNShape bpmnShape = (BPMNShape) de;
+                if(bpmnShape.getBpmnElement().getId().equals(flowElement.getId())) {
+                    return bpmnShape;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void connectNodes(Definitions definitions, Process process) {
+        Plane plane = definitions.getDiagrams().get(0).getPlane();
+        getStartEvents(process).stream().forEach(startEvent -> {
+            Task workitemForStartEvent = getRestWorkitemForStartEvent(startEvent, process);
+            // connect start event to task
+            SequenceFlow startToWorkitemSequenceFlow = Bpmn2Factory.eINSTANCE.createSequenceFlow();
+            startToWorkitemSequenceFlow.setSourceRef(startEvent);
+            startToWorkitemSequenceFlow.setTargetRef(workitemForStartEvent);
+            process.getFlowElements().add(startToWorkitemSequenceFlow);
+            // add bpmndi info for sequence flow
+
+            BPMNEdge startToWorkitemEdge = BpmnDiFactory.eINSTANCE.createBPMNEdge();
+            startToWorkitemEdge.setBpmnElement(startToWorkitemSequenceFlow);
+            startToWorkitemEdge.setSourceElement(getBpmnShapeForFlowElement(startEvent, definitions));
+            startToWorkitemEdge.setTargetElement(getBpmnShapeForFlowElement(workitemForStartEvent, definitions));
+            plane.getPlaneElement().add(startToWorkitemEdge);
+
+
+            EndEvent endEventForStartEvent = getEndEventForStartEvent(startEvent, process);
+            // connect workitem to end event
+            SequenceFlow workitemToEndEventSequenceFlow = Bpmn2Factory.eINSTANCE.createSequenceFlow();
+            workitemToEndEventSequenceFlow.setSourceRef(workitemForStartEvent);
+            workitemToEndEventSequenceFlow.setTargetRef(endEventForStartEvent);
+            process.getFlowElements().add(workitemToEndEventSequenceFlow);
+            // add bpmndi info for sequence flow
+
+            BPMNEdge workitemToEndEdge = BpmnDiFactory.eINSTANCE.createBPMNEdge();
+            workitemToEndEdge.setBpmnElement(workitemToEndEventSequenceFlow);
+            workitemToEndEdge.setSourceElement(getBpmnShapeForFlowElement(workitemForStartEvent, definitions));
+            workitemToEndEdge.setTargetElement(getBpmnShapeForFlowElement(endEventForStartEvent, definitions));
+            plane.getPlaneElement().add(workitemToEndEdge);
+        });
+    }
+
+
+    private static List<StartEvent> getStartEvents(Process process) {
+        List<StartEvent> startEvents = new ArrayList<>();
+        for(FlowElement flowElement : process.getFlowElements()) {
+            if(flowElement instanceof  StartEvent) {
+                startEvents.add((StartEvent) flowElement);
+            }
+        }
+        return startEvents;
+    }
+
+    private static List<EndEvent> getEndEvents(Process process) {
+        List<EndEvent> endEvents = new ArrayList<>();
+        for(FlowElement flowElement : process.getFlowElements()) {
+            if(flowElement instanceof  EndEvent) {
+                endEvents.add((EndEvent) flowElement);
+            }
+        }
+        return endEvents;
+    }
+
+    private static List<Task> getTasks(Process process) {
+        List<Task> tasks = new ArrayList<>();
+        for(FlowElement flowElement : process.getFlowElements()) {
+            if(flowElement instanceof  Task) {
+                tasks.add((Task) flowElement);
+            }
+        }
+        return tasks;
+    }
+
+    private static Task getRestWorkitemForStartEvent(StartEvent startEvent, Process process) {
+        List<Task> retTasks = getTasks(process).stream()
+                .filter(task -> task.getName().indexOf(startEvent.getName()) >= 0)
+                .collect(Collectors.toList());
+        return (retTasks != null && retTasks.size() > 0) ? retTasks.get(0) : null;
+    }
+
+    private static EndEvent getEndEventForStartEvent(StartEvent startEvent, Process process) {
+        List<EndEvent> retEndEvents = getEndEvents(process).stream()
+                .filter(endEvent -> endEvent.getName().equals(startEvent.getName() + "End"))
+                .collect(Collectors.toList());
+        return (retEndEvents != null && retEndEvents.size() > 0 ? retEndEvents.get(0) : null);
+    }
+
+    public static Task createRestWorkitemForFunction(
                                            Function function,
                                            String triggerName,
                                            Definitions definitions,
                                            Process process,
                                            int triggerCounter) {
+        Task task = Bpmn2Factory.eINSTANCE.createTask();
+        task.setId(triggerName + "RestWorkitem");
+
         // add selectable to task
         addDroolsExtensionToBaseElement(task,
                                         "selectable",
@@ -298,7 +426,7 @@ public class ParserUtils {
         addDroolsExtensionToBaseElement(task,
                                         "taskName",
                                         function.getName());
-        task.setName(function.getName());
+        task.setName(triggerName + "-" + function.getName());
         // create item definitions for taskName
         ItemDefinition taskNameItemDefinition = Bpmn2Factory.eINSTANCE.createItemDefinition();
         taskNameItemDefinition.setStructureRef("String");
@@ -439,6 +567,8 @@ public class ParserUtils {
         bounds.setY(80 + (triggerCounter * 80));
         bpmnShape.setBounds(bounds);
         plane.getPlaneElement().add(bpmnShape);
+
+        return task;
     }
 
     public static Property getProcessPropertyFor(String triggerName,

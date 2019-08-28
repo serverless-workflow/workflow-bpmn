@@ -199,6 +199,9 @@ public class BpmnParser {
                                           triggerEventCounter.getAndIncrement());
         });
 
+        ParserUtils.generateEndEvents(definitions, process);
+        ParserUtils.connectNodes(definitions, process);
+
         return definitions;
     }
 
