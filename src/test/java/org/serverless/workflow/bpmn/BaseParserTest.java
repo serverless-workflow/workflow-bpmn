@@ -21,11 +21,12 @@ package org.serverless.workflow.bpmn;
 import java.util.Iterator;
 
 import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.emf.ecore.util.FeatureMap;
 
 public class BaseParserTest {
-    public String getExtensionValueFor(BaseElement baseElement, String extensionName) {
+
+    public String getExtensionValueFor(BaseElement baseElement,
+                                       String extensionName) {
         Iterator<FeatureMap.Entry> iter = baseElement.getAnyAttribute().iterator();
         while (iter.hasNext()) {
             FeatureMap.Entry entry = iter.next();

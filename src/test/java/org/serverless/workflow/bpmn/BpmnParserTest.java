@@ -18,8 +18,6 @@
 
 package org.serverless.workflow.bpmn;
 
-import java.util.Iterator;
-
 import org.apache.commons.io.IOUtils;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.EndEvent;
@@ -29,7 +27,6 @@ import org.eclipse.bpmn2.Property;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.bpmn2.Task;
-import org.eclipse.emf.ecore.util.FeatureMap;
 import org.junit.jupiter.api.Test;
 import org.serverless.workflow.bpmn.impl.BpmnParser;
 
@@ -77,15 +74,21 @@ public class BpmnParserTest extends BaseParserTest {
         assertTrue(process.isIsExecutable());
         assertFalse(process.isIsClosed());
 
-
         assertNotNull(process.getProperties());
-        assertEquals(1, process.getProperties().size());
+        assertEquals(1,
+                     process.getProperties().size());
         Property processVar = process.getProperties().get(0);
-        assertEquals("testtrigger", processVar.getName());
-        assertEquals("String", processVar.getItemSubjectRef().getStructureRef());
+        assertEquals("testtrigger",
+                     processVar.getName());
+        assertEquals("String",
+                     processVar.getItemSubjectRef().getStructureRef());
 
-        assertEquals("com.test.process", getExtensionValueFor(process, "packageName"));
-        assertEquals("1.0", getExtensionValueFor(process, "version"));
+        assertEquals("com.test.process",
+                     getExtensionValueFor(process,
+                                          "packageName"));
+        assertEquals("1.0",
+                     getExtensionValueFor(process,
+                                          "version"));
 
         assertNotNull(process.getFlowElements());
         assertEquals(5,
@@ -97,7 +100,8 @@ public class BpmnParserTest extends BaseParserTest {
         assertTrue(process.getFlowElements().get(4) instanceof SequenceFlow);
 
         StartEvent startEvent = (StartEvent) process.getFlowElements().get(0);
-        assertEquals("testtrigger", startEvent.getName());
+        assertEquals("testtrigger",
+                     startEvent.getName());
         assertNotNull(startEvent.getEventDefinitions());
         assertEquals(1,
                      startEvent.getEventDefinitions().size());
@@ -105,9 +109,11 @@ public class BpmnParserTest extends BaseParserTest {
 
         Task restWorkItem = (Task) process.getFlowElements().get(1);
         assertNotNull(restWorkItem);
-        assertEquals("testtrigger-Rest", restWorkItem.getName());
-        assertEquals("Rest", getExtensionValueFor(restWorkItem, "taskName"));
-
+        assertEquals("testtrigger-Rest",
+                     restWorkItem.getName());
+        assertEquals("Rest",
+                     getExtensionValueFor(restWorkItem,
+                                          "taskName"));
     }
 
     @Test
@@ -131,17 +137,25 @@ public class BpmnParserTest extends BaseParserTest {
         assertTrue(process.isIsExecutable());
         assertFalse(process.isIsClosed());
 
-
         assertNotNull(process.getProperties());
-        assertEquals(2, process.getProperties().size());
-        assertEquals("testtrigger", process.getProperties().get(0).getName());
-        assertEquals("String", process.getProperties().get(0).getItemSubjectRef().getStructureRef());
+        assertEquals(2,
+                     process.getProperties().size());
+        assertEquals("testtrigger",
+                     process.getProperties().get(0).getName());
+        assertEquals("String",
+                     process.getProperties().get(0).getItemSubjectRef().getStructureRef());
 
-        assertEquals("testtrigger2", process.getProperties().get(1).getName());
-        assertEquals("String", process.getProperties().get(1).getItemSubjectRef().getStructureRef());
+        assertEquals("testtrigger2",
+                     process.getProperties().get(1).getName());
+        assertEquals("String",
+                     process.getProperties().get(1).getItemSubjectRef().getStructureRef());
 
-        assertEquals("com.test.process", getExtensionValueFor(process, "packageName"));
-        assertEquals("1.0", getExtensionValueFor(process, "version"));
+        assertEquals("com.test.process",
+                     getExtensionValueFor(process,
+                                          "packageName"));
+        assertEquals("1.0",
+                     getExtensionValueFor(process,
+                                          "version"));
 
         assertNotNull(process.getFlowElements());
         assertEquals(10,
@@ -159,29 +173,34 @@ public class BpmnParserTest extends BaseParserTest {
 
         StartEvent startEvent1 = (StartEvent) process.getFlowElements().get(0);
         assertNotNull(startEvent1.getEventDefinitions());
-        assertEquals("testtrigger", startEvent1.getName());
+        assertEquals("testtrigger",
+                     startEvent1.getName());
         assertEquals(1,
                      startEvent1.getEventDefinitions().size());
         assertTrue(startEvent1.getEventDefinitions().get(0) instanceof MessageEventDefinition);
 
         StartEvent startEvent2 = (StartEvent) process.getFlowElements().get(1);
         assertNotNull(startEvent2.getEventDefinitions());
-        assertEquals("testtrigger2", startEvent2.getName());
+        assertEquals("testtrigger2",
+                     startEvent2.getName());
         assertEquals(1,
                      startEvent2.getEventDefinitions().size());
         assertTrue(startEvent2.getEventDefinitions().get(0) instanceof MessageEventDefinition);
 
         Task restWorkItem1 = (Task) process.getFlowElements().get(2);
         assertNotNull(restWorkItem1);
-        assertEquals("testtrigger-Rest", restWorkItem1.getName());
-        assertEquals("Rest", getExtensionValueFor(restWorkItem1, "taskName"));
+        assertEquals("testtrigger-Rest",
+                     restWorkItem1.getName());
+        assertEquals("Rest",
+                     getExtensionValueFor(restWorkItem1,
+                                          "taskName"));
 
         Task restWorkItem2 = (Task) process.getFlowElements().get(3);
         assertNotNull(restWorkItem2);
-        assertEquals("testtrigger2-Rest", restWorkItem2.getName());
-        assertEquals("Rest", getExtensionValueFor(restWorkItem2, "taskName"));
-
-
-
+        assertEquals("testtrigger2-Rest",
+                     restWorkItem2.getName());
+        assertEquals("Rest",
+                     getExtensionValueFor(restWorkItem2,
+                                          "taskName"));
     }
 }
