@@ -126,4 +126,54 @@ start event for each, for example:
 
 ![Generated process 2](img/twoeventstateswithfunction.png)
 
-### More to come soon!
+### Validation
+
+Just like in the workflow-api project, you can validate your serverless JSON. 
+In case of invalid json, a default (empty) business process will be generated.
+
+```java
+    BpmnParser parser = new BpmnParser(workflowJSON);
+    assertTrue(parser.getWorkflowController().isValid());
+    ...
+```
+
+### Changing/Testing the generated process
+
+If you wish to make additional changes to the generated process, BpmnParser provides methods to 
+get the org.eclipse.bpmn2.Definitions object. So for example you can do:
+
+```java
+    BpmnParser parser = new BpmnParser(workflowJSON);
+    assertTrue(parser.getWorkflowController().isValid());
+    ...
+    WorkflowBpmn2ResourceImpl resource = parser.toBpmn2Resource();
+    // get the document root
+    DocumentRoot documentRoot = (DocumentRoot) resource.getContents().get(0);
+    Definitions definitions = documentRoot.getDefinitions()
+    
+    // get the first element (process element)
+    Process process = (Process) definitions.getRootElements().get(0);
+    // make sure the first node of process is a start node
+    assertTrue(process.getFlowElements().get(0) instanceof StartEvent);
+```
+
+Let's say we want to now change the name of the first start event
+
+```java
+    StartEvent startEvent = (StartEvent) process.getFlowElements().get(0);
+    startEvent.setName("myCustomName");
+    
+    ...
+    
+```
+
+And now you can generate the BPMN2 String for your updated process:
+
+```java
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    resource.save(outputStream,
+                  new HashMap());
+    String updatedBpmn2String =  stream.toString("UTF-8");
+    
+```
+

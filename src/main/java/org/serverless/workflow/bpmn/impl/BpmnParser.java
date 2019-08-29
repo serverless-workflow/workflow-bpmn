@@ -86,6 +86,10 @@ public class BpmnParser {
         return documentRoot.getDefinitions();
     }
 
+    public WorkflowBpmn2ResourceImpl toBpmn2Resource() {
+        return parse();
+    }
+
     private WorkflowBpmn2ResourceImpl parse() {
         if (workflowController != null && workflowController.isValid()) {
             return genBpmnResource();
