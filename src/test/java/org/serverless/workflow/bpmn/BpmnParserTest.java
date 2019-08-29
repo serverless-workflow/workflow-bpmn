@@ -25,6 +25,7 @@ import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.EndEvent;
 import org.eclipse.bpmn2.MessageEventDefinition;
 import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.Property;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.bpmn2.Task;
@@ -37,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class BpmnParserTest {
+public class BpmnParserTest extends BaseParserTest {
 
     @Test
     public void testGetDefaultProcess() throws Exception {
@@ -76,19 +77,16 @@ public class BpmnParserTest {
         assertTrue(process.isIsExecutable());
         assertFalse(process.isIsClosed());
 
-        Iterator<FeatureMap.Entry> iter = process.getAnyAttribute().iterator();
-        while (iter.hasNext()) {
-            FeatureMap.Entry entry = iter.next();
-            if (entry.getEStructuralFeature().getName().equals("packageName")) {
-                assertEquals("com.test.process",
-                             entry.getValue());
-            }
 
-            if (entry.getEStructuralFeature().getName().equals("version")) {
-                assertEquals("1.0",
-                             entry.getValue());
-            }
-        }
+        assertNotNull(process.getProperties());
+        assertEquals(1, process.getProperties().size());
+        Property processVar = process.getProperties().get(0);
+        assertEquals("testtrigger", processVar.getName());
+        assertEquals("String", processVar.getItemSubjectRef().getStructureRef());
+
+        assertEquals("com.test.process", getExtensionValueFor(process, "packageName"));
+        assertEquals("1.0", getExtensionValueFor(process, "version"));
+        Iterator<FeatureMap.Entry> iter = process.getAnyAttribute().iterator();
 
         assertNotNull(process.getFlowElements());
         assertEquals(5,
@@ -104,6 +102,12 @@ public class BpmnParserTest {
         assertEquals(1,
                      startEvent.getEventDefinitions().size());
         assertTrue(startEvent.getEventDefinitions().get(0) instanceof MessageEventDefinition);
+
+        Task restWorkItem = (Task) process.getFlowElements().get(1);
+        assertNotNull(restWorkItem);
+        assertEquals("testtrigger-Rest", restWorkItem.getName());
+        assertEquals("Rest", getExtensionValueFor(restWorkItem, "taskName"));
+
     }
 
     @Test
@@ -115,8 +119,8 @@ public class BpmnParserTest {
         BpmnParser parser = new BpmnParser(workflowString);
         assertTrue(parser.getWorkflowController().isValid());
 
-        //System.out.println("****" + parser.toBpmn2String());
-
-        // TODO finish
+        Definitions def = parser.toBpmn2Definitions();
+        assertNotNull(def.getRootElements().get(0));
+        assertTrue(def.getRootElements().get(0) instanceof Process);
     }
 }
