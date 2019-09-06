@@ -123,6 +123,7 @@ public class BpmnParserTest extends BaseParserTest {
                           "UTF-8");
 
         BpmnParser parser = new BpmnParser(workflowString);
+
         assertTrue(parser.getWorkflowController().isValid());
 
         Definitions def = parser.toBpmn2Definitions();

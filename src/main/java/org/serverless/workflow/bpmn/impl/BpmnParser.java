@@ -59,11 +59,11 @@ public class BpmnParser {
     private List<StartEvent> startMessageEvents = new ArrayList<>();
 
     public BpmnParser(String workflowJSON) {
-        this.workflowController = new WorkflowController(workflowJSON);
+        this.workflowController = new WorkflowController().forJson(workflowJSON);
     }
 
     public BpmnParser(Workflow workflow) {
-        this.workflowController = new WorkflowController(workflow);
+        this.workflowController = new WorkflowController().forWorkflow(workflow);
     }
 
     public BpmnParser(WorkflowController workflowController) {
