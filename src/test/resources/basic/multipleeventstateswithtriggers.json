@@ -1,5 +1,5 @@
 {
-  "id": "1",
+  "name": "testprocess",
   "metadata" : {
     "id": "testprocess",
     "processn": "testprocessname",
@@ -10,21 +10,18 @@
     "version": "1.0"
   },
   "trigger-defs" : [ {
-    "id": "2",
     "name" : "testtrigger",
     "source" : "testsource",
     "eventID" : "testeventid",
     "correlation-token" : "testcorrelationtoken"
   },
     {
-      "id": "3",
       "name" : "testtrigger2",
       "source" : "testsource2",
       "eventID" : "testeventid2",
       "correlation-token" : "testcorrelationtoken2"
     }],
   "states" : [ {
-    "id": "4",
     "events" : [ {
       "event-expression" : "trigger.equals(\"testtrigger\")",
       "timeout" : "testTimeout",
@@ -52,7 +49,6 @@
     "start" : true
   },
     {
-      "id": "5",
       "events" : [ {
         "event-expression" : "trigger.equals(\"testtrigger2\")",
         "timeout" : "testTimeout",

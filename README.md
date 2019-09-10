@@ -57,22 +57,19 @@ The json could look like:
 
 ```json
 {
-  "id": "1",
+  "name": "test-workflow",
   "metadata" : {
-    "id": "testprocess",
     "processn": "testprocessname",
     "package": "com.test.process",
     "version": "1.0"
   },
   "trigger-defs" : [ {
-    "id": "2",
     "name" : "testtrigger",
     "source" : "testsource",
     "eventID" : "testeventid",
     "correlation-token" : "testcorrelationtoken"
   } ],
   "states" : [ {
-    "id": "3",
     "events" : [ {
       "event-expression" : "trigger.equals(\"testtrigger\")",
       "timeout" : "testTimeout",
