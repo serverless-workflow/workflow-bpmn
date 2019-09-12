@@ -36,11 +36,14 @@ import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNPlane;
 import org.eclipse.bpmn2.di.BpmnDiFactory;
 import org.serverless.workflow.api.Workflow;
-import org.serverless.workflow.api.WorkflowController;
+import org.serverless.workflow.api.WorkflowManager;
 import org.serverless.workflow.api.events.TriggerEvent;
 import org.serverless.workflow.api.states.EventState;
+import org.serverless.workflow.api.validation.ValidationError;
 import org.serverless.workflow.bpmn.util.ParserUtils;
 import org.serverless.workflow.bpmn.util.WorkflowBpmn2ResourceImpl;
+import org.serverless.workflow.impl.utils.WorkflowUtils;
+import org.serverless.workflow.spi.WorkflowManagerProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,22 +55,30 @@ public class BpmnParser {
     private static final String exporterName = "serverless-workflow";
     private static final String exporterVersion = "1.0";
 
-    private WorkflowController workflowController;
+    private WorkflowManager workflowManager;
     private boolean genDefaultOnWorkflowErrors = true;
 
     private boolean zOrderEnabled = true;
     private List<StartEvent> startMessageEvents = new ArrayList<>();
 
     public BpmnParser(String workflowJSON) {
-        this.workflowController = new WorkflowController().forJson(workflowJSON);
+        this.workflowManager = WorkflowManagerProvider.getInstance().get();
+        if (this.workflowManager == null) {
+            throw new RuntimeException("Unable to get workflow manager.");
+        }
+        this.workflowManager.setJson(workflowJSON);
     }
 
     public BpmnParser(Workflow workflow) {
-        this.workflowController = new WorkflowController().forWorkflow(workflow);
+        this.workflowManager = WorkflowManagerProvider.getInstance().get();
+        if (this.workflowManager == null) {
+            throw new RuntimeException("Unable to get workflow manager.");
+        }
+        this.workflowManager.setWorkflow(workflow);
     }
 
-    public BpmnParser(WorkflowController workflowController) {
-        this.workflowController = workflowController;
+    public BpmnParser(WorkflowManager workflowManager) {
+        this.workflowManager = workflowManager;
     }
 
     public String toBpmn2String() throws Exception {
@@ -91,21 +102,23 @@ public class BpmnParser {
     }
 
     private WorkflowBpmn2ResourceImpl parse() {
-        if (workflowController != null && workflowController.isValid()) {
+        List<ValidationError> validationErrors = workflowManager == null ? new ArrayList<>() : workflowManager.getWorkflowValidator().validate();
+
+        if (validationErrors.size() < 1) {
             return genBpmnResource();
         } else {
             if (genDefaultOnWorkflowErrors) {
                 logger.info("Generating default process");
                 return genDefaultResource();
             } else {
-                logger.info("Can't parse workflow with validation errors: " + workflowController.displayValidationErrors());
-                throw new RuntimeException("Can't parse workflow with validation errors: " + workflowController.displayValidationErrors());
+                logger.info("Can't parse workflow with validation errors.");
+                throw new RuntimeException("Can't parse workflow with validation errors.");
             }
         }
     }
 
-    public WorkflowController getWorkflowController() {
-        return workflowController;
+    public WorkflowManager getWorkflowManager() {
+        return workflowManager;
     }
 
     public void setGenDefaultOnWorkflowErrors(boolean genDefaultOnWorkflowErrors) {
@@ -141,7 +154,7 @@ public class BpmnParser {
         ParserUtils.applyDefinitionProperties(definitions,
                                               definitionProps);
 
-        Workflow workflow = workflowController.getWorkflow();
+        Workflow workflow = workflowManager.getWorkflow();
         Map<String, String> processProps = new HashMap<>();
         processProps.put("id",
                          workflow.getMetadata().get("id") != null ? workflow.getMetadata().get("id") : "defaultProcess");
@@ -175,7 +188,7 @@ public class BpmnParser {
 
         // generate message start events
         // trigger events become start message events
-        List<TriggerEvent> triggerEventList = workflowController.getAllTriggerEventsAssociatedWithEventStates();
+        List<TriggerEvent> triggerEventList = WorkflowUtils.getAllTriggerEventsAssociatedWithEventStates(workflowManager);
         if (triggerEventList != null && triggerEventList.size() > 0) {
             AtomicInteger starEventCounter = new AtomicInteger();
             triggerEventList.stream().forEach(trigger -> {
@@ -195,8 +208,9 @@ public class BpmnParser {
         // Next versions will support more serverless workflow states
         AtomicInteger triggerEventCounter = new AtomicInteger();
         triggerEventList.stream().forEach(trigger -> {
-            List<EventState> eventStatesForTrigger = workflowController.getEventStatesForTriggerEvent(trigger);
-            ParserUtils.generateWorkitems(workflowController.getAllFunctionsForEventStates(eventStatesForTrigger),
+            List<EventState> eventStatesForTrigger = WorkflowUtils.getEventStatesForTriggerEvent(trigger,
+                                                                                                 workflowManager);
+            ParserUtils.generateWorkitems(WorkflowUtils.getAllFunctionsForEventStates(eventStatesForTrigger),
                                           trigger.getName(),
                                           definitions,
                                           process,

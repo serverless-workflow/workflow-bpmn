@@ -60,7 +60,7 @@ public class BpmnParserTest extends BaseParserTest {
                           "UTF-8");
 
         BpmnParser parser = new BpmnParser(workflowString);
-        assertTrue(parser.getWorkflowController().isValid());
+        assertTrue(parser.getWorkflowManager().getWorkflowValidator().validate().size() < 1);
 
         Definitions def = parser.toBpmn2Definitions();
         assertNotNull(def.getRootElements().get(0));
@@ -124,7 +124,7 @@ public class BpmnParserTest extends BaseParserTest {
 
         BpmnParser parser = new BpmnParser(workflowString);
 
-        assertTrue(parser.getWorkflowController().isValid());
+        assertTrue(parser.getWorkflowManager().getWorkflowValidator().validate().size() < 1);
 
         Definitions def = parser.toBpmn2Definitions();
         assertNotNull(def.getRootElements().get(0));

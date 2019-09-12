@@ -29,7 +29,7 @@
     <dependencies>
         <dependency>
             <groupId>org.servlerless</groupId>
-            <artifactId>workflow-api</artifactId>
+            <artifactId>workflow-impl</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
