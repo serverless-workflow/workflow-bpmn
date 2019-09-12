@@ -102,9 +102,7 @@ public class BpmnParser {
     }
 
     private WorkflowBpmn2ResourceImpl parse() {
-        List<ValidationError> validationErrors = workflowManager == null ? new ArrayList<>() : workflowManager.getWorkflowValidator().validate();
-
-        if (validationErrors.size() < 1) {
+        if (workflowManager != null && workflowManager.getWorkflowValidator().isValid()) {
             return genBpmnResource();
         } else {
             if (genDefaultOnWorkflowErrors) {
