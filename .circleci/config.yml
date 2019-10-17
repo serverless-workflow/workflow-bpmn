@@ -31,14 +31,6 @@ jobs:
             - v1-dependencies-
 
       - run: mvn dependency:go-offline
-      - run: |
-          git clone https://github.com/serverless-workflow/workflow-api.git
-          cd workflow-api
-          mvn install -DskiptTests
-          cd ..
-          git clone https://github.com/serverless-workflow/workflow-impl.git
-          cd workflow-impl
-          mvn install -DskiptTests
       - save_cache:
           paths:
             - ~/.m2
@@ -46,3 +38,5 @@ jobs:
 
       # run tests!
       - run: mvn integration-test
+      # Deploy to GitHub package repository
+      - run: mvn -s .circleci/settings.xml -DskipTests deploy || true

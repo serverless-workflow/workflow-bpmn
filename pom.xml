@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.servlerless</groupId>
+    <groupId>org.serverless</groupId>
     <artifactId>workflow-bpmn</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -26,19 +27,20 @@
         <apache.commons.io.verions>2.6</apache.commons.io.verions>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.servlerless</groupId>
-            <artifactId>workflow-impl</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub ${OWNER} Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/${OWNER}/${project.name}</url>
+        </repository>
+    </distributionManagement>
 
+    <dependencies>
         <dependency>
             <groupId>org.jbpm</groupId>
             <artifactId>jbpm-bpmn2-emfextmodel</artifactId>
             <version>${jbpm.version}</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -160,4 +162,36 @@
             </snapshots>
         </repository>
     </repositories>
+
+    <profiles>
+        <profile>
+            <id>local</id>
+            <dependencies>
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>workflow-impl</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>ci</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>jitpack.io</id>
+                    <url>https://jitpack.io</url>
+                </repository>
+            </repositories>
+            <dependencies>
+                <dependency>
+                    <groupId>com.github.serverless-workflow</groupId>
+                    <artifactId>workflow-impl</artifactId>
+                    <version>master-SNAPSHOT</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
