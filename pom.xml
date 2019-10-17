@@ -135,7 +135,15 @@
     </build>
 
     <repositories>
-        <!-- Bootstrap repository to locate the parent pom when the parent pom has not been build locally. -->
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Repository Group</name>
