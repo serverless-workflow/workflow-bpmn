@@ -10,20 +10,20 @@
     "version": "1.0"
   },
   "trigger-defs" : [ {
-    "name" : "testtrigger",
-    "source" : "testsource",
-    "eventID" : "testeventid",
+    "name": "testtrigger",
+    "source": "testsource",
+    "type": "testeventtype",
     "correlation-token" : "testcorrelationtoken"
   },
     {
-      "name" : "testtrigger2",
-      "source" : "testsource2",
-      "eventID" : "testeventid2",
+      "name": "testtrigger2",
+      "source": "testsource2",
+      "type": "testeventtype2",
       "correlation-token" : "testcorrelationtoken2"
     }],
   "states" : [ {
     "events" : [ {
-      "event-expression" : "trigger.equals(\"testtrigger\")",
+      "event-expression" : "name eq 'testtrigger'",
       "timeout" : "testTimeout",
       "action-mode" : "SEQUENTIAL",
       "actions" : [ {
@@ -50,7 +50,7 @@
   },
     {
       "events" : [ {
-        "event-expression" : "trigger.equals(\"testtrigger2\")",
+        "event-expression" : "name eq 'testtrigger2'",
         "timeout" : "testTimeout",
         "action-mode" : "SEQUENTIAL",
         "actions" : [ {

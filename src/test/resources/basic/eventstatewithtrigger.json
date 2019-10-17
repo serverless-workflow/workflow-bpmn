@@ -12,12 +12,12 @@
   "trigger-defs" : [ {
     "name" : "testtrigger",
     "source" : "testsource",
-    "eventID" : "testeventid",
+    "type" : "testevettype",
     "correlation-token" : "testcorrelationtoken"
   } ],
   "states" : [ {
     "events" : [ {
-      "event-expression" : "trigger.equals(\"testtrigger\")",
+      "event-expression" : "name eq 'testtrigger'",
       "timeout" : "testTimeout",
       "action-mode" : "SEQUENTIAL",
       "actions" : [ {

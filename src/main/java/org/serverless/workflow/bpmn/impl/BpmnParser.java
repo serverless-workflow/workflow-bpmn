@@ -18,8 +18,6 @@
 
 package org.serverless.workflow.bpmn.impl;
 
-import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,6 +46,8 @@ import org.serverless.workflow.spi.WorkflowManagerProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
+
 public class BpmnParser {
 
     private static final Logger logger = LoggerFactory.getLogger(BpmnParser.class);
@@ -65,7 +65,7 @@ public class BpmnParser {
         if (this.workflowManager == null) {
             throw new RuntimeException("Unable to get workflow manager.");
         }
-        this.workflowManager.toWorkflow(workflowJSON);
+        this.workflowManager.setMarkup(workflowJSON);
     }
 
     public BpmnParser(Workflow workflow) {
@@ -125,7 +125,6 @@ public class BpmnParser {
     private WorkflowBpmn2ResourceImpl genBpmnResource() {
         WorkflowBpmn2ResourceImpl resource = ParserUtils.createNewResource();
         genDefinitions(resource);
-
         return resource;
     }
 
