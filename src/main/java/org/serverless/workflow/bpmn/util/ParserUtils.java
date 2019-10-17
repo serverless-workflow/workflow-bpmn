@@ -18,6 +18,8 @@
 
 package org.serverless.workflow.bpmn.util;
 
+import static org.apache.commons.lang3.StringEscapeUtils.escapeXml;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -76,8 +78,6 @@ import org.serverless.workflow.api.events.TriggerEvent;
 import org.serverless.workflow.api.functions.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.commons.lang3.StringEscapeUtils.escapeXml;
 
 public class ParserUtils {
 
@@ -192,7 +192,7 @@ public class ParserUtils {
         definitions.getRootElements().add(itemDefinition);
         // then the message
         Message message = Bpmn2Factory.eINSTANCE.createMessage();
-        message.setId(triggerEvent.getEventID());
+        message.setId(triggerEvent.getType());
         message.setItemRef(itemDefinition);
         message.setName(triggerEvent.getMessage());
         definitions.getRootElements().add(message);
