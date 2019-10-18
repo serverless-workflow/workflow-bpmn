@@ -2,6 +2,9 @@
 
 [![CircleCI](https://circleci.com/gh/serverless-workflow/workflow-bpmn.svg?style=svg)](https://circleci.com/gh/serverless-workflow/workflow-bpmn)
 
+[![Release](https://jitpack.io/v/serverless-workflow/workflow-bpmn.svg)](https://jitpack.io/#serverless-workflow/workflow-bpmn)
+
+
 Serverless Workflow Specification Version 0.1 - https://github.com/cncf/wg-serverless/blob/master/workflow/spec/spec.md
 
 This project provides:
