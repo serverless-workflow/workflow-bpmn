@@ -27,15 +27,14 @@
         <apache.commons.io.verions>2.6</apache.commons.io.verions>
     </properties>
 
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub ${OWNER} Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/${OWNER}/${project.name}</url>
-        </repository>
-    </distributionManagement>
-
     <dependencies>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>workflow-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.jbpm</groupId>
             <artifactId>jbpm-bpmn2-emfextmodel</artifactId>
@@ -68,7 +67,6 @@
             <artifactId>org.eclipse.bpmn2</artifactId>
             <version>${version.org.eclipse.bpmn2}</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -162,36 +160,4 @@
             </snapshots>
         </repository>
     </repositories>
-
-    <profiles>
-        <profile>
-            <id>local</id>
-            <dependencies>
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>workflow-impl</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>ci</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <repositories>
-                <repository>
-                    <id>jitpack.io</id>
-                    <url>https://jitpack.io</url>
-                </repository>
-            </repositories>
-            <dependencies>
-                <dependency>
-                    <groupId>com.github.serverless-workflow</groupId>
-                    <artifactId>workflow-impl</artifactId>
-                    <version>master-SNAPSHOT</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>
