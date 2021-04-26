@@ -24,7 +24,7 @@
         <version.org.eclipse.bpmn2>0.8.2-jboss</version.org.eclipse.bpmn2>
         <jbpm.version>7.25.0.Final</jbpm.version>
         <slf4j.version>1.7.28</slf4j.version>
-        <apache.commons.io.verions>2.6</apache.commons.io.verions>
+        <apache.commons.io.verions>2.7</apache.commons.io.verions>
     </properties>
 
     <dependencies>
